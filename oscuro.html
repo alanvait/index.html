@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Foco Oscuro — Registro de lo Abyecto y la Memoria</title>
+  <style>
+    :root {
+      --bg-color: #030303;
+      --text-color: #d8d8d8;
+      --accent-color: #a82424;
+      --subtle-gray: #555555;
+      --border-color: #1a1a1a;
+      --torch-radius: 170px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-color);
+      font-family: 'Courier New', Courier, monospace;
+      color: var(--text-color);
+      cursor: none;
+    }
+
+    /* Canvas para efecto de luz y oscuridad */
+    #torch-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* Indicador del punto central de la linterna */
+    .torch-cursor {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 15;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Contenedor principal de la galería */
+    #gallery-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+    }
+
+    /* Piezas expuestas */
+    .artwork {
+      position: absolute;
+      max-width: 900px;
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+      pointer-events: none;
+    }
+
+    .artwork.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .artwork-frame {
+      border: 1px solid var(--border-color);
+      background: #000;
+      padding: 16px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.95);
+      margin-bottom: 20px;
+      max-height: 52vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .artwork-image {
+      max-height: 48vh;
+      max-width: 100%;
+      object-fit: contain;
+      display: block;
+      filter: grayscale(20%) contrast(110%);
+    }
+
+    .artwork-meta {
+      text-align: left;
+      width: 100%;
+      border-top: 1px solid var(--border-color);
+      padding-top: 16px;
+    }
+
+    .artwork-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+      gap: 10px;
+    }
+
+    .artwork-title {
+      font-size: 1.25rem;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+
+    .artwork-artist {
+      font-size: 0.9rem;
+      color: var(--accent-color);
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .technical-sheet {
+      font-size: 0.78rem;
+      color: var(--subtle-gray);
+      margin-bottom: 14px;
+      line-height: 1.4;
+      letter-spacing: 0.5px;
+    }
+
+    .artwork-desc {
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #a0a0a0;
+      text-align: justify;
+    }
+
+    /* Interfaz gráfica fija (UI) */
+    .ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 20;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 30px 40px;
+    }
+
+    header {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 12px;
+    }
+
+    h1 {
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      font-size: 0.95rem;
+      color: #666;
+    }
+
+    .sub-header {
+      font-size: 0.75rem;
+      color: #333;
+      letter-spacing: 2px;
+      margin-top: 4px;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+    }
+
+    .manifesto {
+      max-width: 440px;
+      font-size: 0.72rem;
+      color: #444;
+      line-height: 1.5;
+      letter-spacing: 0.5px;
+    }
+
+    .manifesto strong {
+      color: #777;
+    }
+
+    .nav-controls {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .btn {
+      background: transparent;
+      border: 1px solid #222;
+      color: #666;
+      padding: 10px 20px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .btn:hover {
+      border-color: #555;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .counter-display {
+      font-size: 0.8rem;
+      color: var(--accent-color);
+      letter-spacing: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .ui-layer {
+        padding: 20px;
+      }
+      footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .manifesto {
+        max-width: 100%;
+        margin-bottom: 15px;
+      }
+      .artwork-title {
+        font-size: 1rem;
+      }
+      .artwork-desc {
+        font-size: 0.78rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Lienzo interactivo para penumbra y haz de luz -->
+  <canvas id="torch-canvas"></canvas>
+  <div class="torch-cursor" id="cursor"></div>
+
+  <!-- Contenedor de las obras expuestas -->
+  <main id="gallery-container">
+
+    <!-- OBRA 1: Teresa Margolles -->
+    <article class="artwork active" data-id="0">
+      <div class="artwork-frame">
+        <img class="artwork-image" src="Vaporizaci%C3%B3n.jpg" alt="Vaporización de Teresa Margolles" onerror="this.onerror=null; this.src='https://placehold.co/800x500/0a0a0a/444444?text=Vaporizaci%C3%B3n.jpg';">
+      </div>
+      <div class="artwork-meta">
+        <div class="artwork-header">
+          <h2 class="artwork-title">Vaporización</h2>
+          <span class="artwork-artist">Teresa Margolles</span>
+        </div>
+        <div class="technical-sheet">
+          Ficha Técnica: 2001 | Instalación (Agua desinfectada proveniente del lavado de cadáveres en la morgue, condensadores industriales, humedad ambiental) | Dimensiones variables.
+        </div>
+        <p class="artwork-desc">
+          Un aire denso y tibio envuelve el espacio. No hay restos visibles, ni carne ni hueso en la penumbra; sin embargo, cada inhalación fuerza al espectador a incorporar la memoria disuelta de los cuerpos no reclamados. El agua que limpia la violencia de la morgue trasciende su contenedor y se transforma en niebla: la víctima ya no es una imagen lejana, sino un aliento que penetra en tus propios pulmones. En el imperio del silencio institucional, la verdad se respira a ciegas; la muerte no se observa a distancia, nos habita.
+        </p>
+      </div>
+    </article>
+
+    <!-- OBRA 2: Enrique Ježik -->
+    <article class="artwork" data-id="1">
+      <div class="artwork-frame">
+        <img class="artwork-image" src="La%20fiesta%20de%20las%20balas.jpg" alt="La fiesta de las balas de Enrique Ježik" onerror="this.onerror=null; this.src='https://placehold.co/800x500/0a0a0a/444444?text=La%20fiesta%20de%20las%20balas.jpg';">
+      </div>
+      <div class="artwork-meta">
+        <div class="artwork-header">
+          <h2 class="artwork-title">La fiesta de las balas</h2>
+          <span class="artwork-artist">Enrique Ježik</span>
+        </div>
+        <div class="technical-sheet">
+          Ficha Técnica: 2011 | Instalación (Tres estructuras de acero y vidrio blindado con 300 impactos de bala de alto calibre, pista de audio de las detonaciones) | Altura: 220 cm cada estructura.
+        </div>
+        <p class="artwork-desc">
+          Tomando su título del sombrío relato de Martín Luis Guzmán sobre la Revolución Mexicana, la obra alza tres monolitos translúcidos fracturados por trescientos proyectiles reales. La luz de tu búsqueda tropieza con el cristal astillado, petrificando la violencia armada que asola el paisaje contemporáneo. El eco grabado de las detonaciones resuena en la oscuridad como una cicatriz acústica. El blindaje, diseñado para proteger, se convierte aquí en un mapa del ataque: la transparencia rota como metáfora de una sociedad rasgada por el fuego impune.
+        </p>
+      </div>
+    </article>
+
+    <!-- OBRA 3: Nan Goldin -->
+    <article class="artwork" data-id="2">
+      <div class="artwork-frame">
+        <img class="artwork-image" src="Nan,%20one%20month%20after%20being%20battered.jpg" alt="Nan, one month after being battered de Nan Goldin" onerror="this.onerror=null; this.src='https://placehold.co/800x500/0a0a0a/444444?text=Nan%2C%20one%20month%20after%20being%20battered.jpg';">
+      </div>
+      <div class="artwork-meta">
+        <div class="artwork-header">
+          <h2 class="artwork-title">Nan, one month after being battered</h2>
+          <span class="artwork-artist">Nan Goldin</span>
+        </div>
+        <div class="technical-sheet">
+          Ficha Técnica: 1984 | Fotografía (Impresión Cibachrome) | 69.5 x 101.5 cm | Colección Tate / MoMA (Pertenece a la serie "The Ballad of Sexual Dependency").
+        </div>
+        <p class="artwork-desc">
+          Un mes después de haber sido golpeada salvajemente por su pareja hasta casi perder la vista, Nan Goldin sitúa la cámara frente a su propio rostro traumatizado. Los ojos congestionados en sangre y el lápiz labial carmesí conviven en una mirada frontal, desprovista de victimización o vergüenza. En la oscuridad de la sala, iluminar este retrato es presenciar el duelo entre la vulnerabilidad del cuerpo agredido y el poder supremo de la auto-representación. La fotógrafa reclama la autoría de su propio dolor para que el abuso doméstico deje de ser un secreto sepultado en las sombras privadas.
+        </p>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- Capa de Interfaz Global -->
+  <div class="ui-layer">
+    <header>
+      <h1>Galería Foco Oscuro // El Cuerpo Abyecto</h1>
+      <div class="sub-header">Búsqueda de la verdad en la penumbra de la impunidad</div>
+    </header>
+
+    <footer>
+      <div class="manifesto">
+        <p><strong>INSTRUCCIÓN:</strong> Mueve el cursor para dirigir la linterna. La verdad y el horror no se entregan a simple vista; requieren una exploración activa e incómoda por parte del espectador.</p>
+      </div>
+
+      <div class="nav-controls">
+        <button class="btn" id="prev-btn">← Anterior</button>
+        <span class="counter-display" id="counter">1 / 3</span>
+        <button class="btn" id="next-btn">Siguiente →</button>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Configuración del Lienzo Canvas
+    const canvas = document.getElementById('torch-canvas');
+    const ctx = canvas.getContext('2d');
+    const customCursor = document.getElementById('cursor');
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let targetX = mouseX;
+    let targetY = mouseY;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Actualización de coordenadas del cursor/toque
+    function updateCoordinates(x, y) {
+      targetX = x;
+      targetY = y;
+      customCursor.style.left = `${x}px`;
+      customCursor.style.top = `${y}px`;
+    }
+
+    window.addEventListener('mousemove', (e) => {
+      updateCoordinates(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        updateCoordinates(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    });
+
+    // Bucle de renderizado del haz de luz
+    function renderTorch() {
+      // Inercia para simular el pulso suave de una linterna de mano
+      mouseX += (targetX - mouseX) * 0.18;
+      mouseY += (targetY - mouseY) * 0.18;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Fondo completamente oscuro (98% opacidad)
+      ctx.fillStyle = 'rgba(2, 2, 2, 0.98)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Gradiente radial para la linterna
+      const torchRadius = 170;
+      const gradient = ctx.createRadialGradient(
+        mouseX, mouseY, 15,
+        mouseX, mouseY, torchRadius
+      );
+
+      gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+      gradient.addColorStop(0.55, 'rgba(0, 0, 0, 0.88)');
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+      // Perforar la penumbra revelando el contenido debajo
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(mouseX, mouseY, torchRadius, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.globalCompositeOperation = 'source-over';
+
+      requestAnimationFrame(renderTorch);
+    }
+
+    renderTorch();
+
+    // Control de Navegación entre obras
+    const artworks = document.querySelectorAll('.artwork');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const counter = document.getElementById('counter');
+    let currentIndex = 0;
+
+    function updateGallery(index) {
+      artworks.forEach((art, i) => {
+        art.classList.toggle('active', i === index);
+      });
+      counter.textContent = `${index + 1} / ${artworks.length}`;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + artworks.length) % artworks.length;
+      updateGallery(currentIndex);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % artworks.length;
+      updateGallery(currentIndex);
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') {
+        prevBtn.click();
+      }
+
+      if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') {
+        nextBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
