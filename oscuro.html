@@ -230,11 +230,20 @@
       display: none;
     }
 
+    body.game-active #torch-canvas,
+    body.game-active .torch-cursor {
+      display: none;
+    }
+
     body.intro-active {
       cursor: default;
     }
 
     body.references-active {
+      cursor: default;
+    }
+
+    body.game-active {
       cursor: default;
     }
 
@@ -286,6 +295,132 @@
       font-size: 0.8rem;
       color: var(--accent-color);
       letter-spacing: 2px;
+    }
+
+    .game-slide {
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .game-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+    }
+
+    .game-eyebrow {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent-color);
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .game-title {
+      color: #fff;
+      font-size: clamp(1.25rem, 3vw, 2rem);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .game-instructions {
+      color: #999;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      text-align: right;
+    }
+
+    .game-hud {
+      display: flex;
+      justify-content: space-between;
+      color: #ddd;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+
+    .game-hud strong {
+      color: var(--accent-color);
+    }
+
+    .game-stage {
+      position: relative;
+      flex: 1;
+      min-height: 180px;
+      overflow: hidden;
+      border: 1px solid #292020;
+      background: radial-gradient(ellipse at 50% 100%, #190909 0%, #050505 58%);
+      touch-action: none;
+    }
+
+    #game-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .game-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.78);
+      text-align: center;
+    }
+
+    .game-overlay[hidden] {
+      display: none;
+    }
+
+    .game-message {
+      color: #fff;
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .game-overlay p {
+      color: #aaa;
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .game-button,
+    .game-touch-controls button {
+      border: 1px solid var(--accent-color);
+      background: #100707;
+      color: #eee;
+      font: inherit;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .game-button {
+      padding: 11px 20px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .game-button:hover,
+    .game-touch-controls button:active {
+      background: #321010;
+    }
+
+    .game-touch-controls {
+      display: none;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .game-touch-controls button {
+      min-width: 62px;
+      min-height: 42px;
+      font-size: 1.1rem;
     }
 
     .artwork.references-slide {
@@ -407,6 +542,17 @@
       .references-heading {
         margin-bottom: 16px;
       }
+      .game-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .game-instructions {
+        text-align: left;
+      }
+      .game-touch-controls {
+        display: flex;
+      }
       .references-list {
         grid-template-columns: 1fr;
         gap: 10px;
@@ -497,9 +643,36 @@
       </div>
     </article>
 
-    <section class="artwork references-slide" aria-labelledby="references-title">
+    <section class="artwork game-slide" aria-labelledby="game-title">
+      <header class="game-heading">
+        <div>
+          <span class="game-eyebrow">Interludio interactivo · Sección 5</span>
+          <h2 class="game-title" id="game-title">Destellos en la oscuridad</h2>
+        </div>
+        <p class="game-instructions">← → o A / D para moverte · Espacio para disparar</p>
+      </header>
+      <div class="game-hud" aria-live="polite">
+        <span>PUNTOS <strong id="game-score">0000</strong></span>
+        <span>VIDAS <strong id="game-lives">3</strong></span>
+      </div>
+      <div class="game-stage">
+        <canvas id="game-canvas" aria-label="Juego de naves: evita los disparos y despeja la oleada"></canvas>
+        <div class="game-overlay" id="game-overlay">
+          <h3 class="game-message" id="game-message">La memoria también contraataca</h3>
+          <p id="game-help">Despeja la oleada de siluetas. No dejes que alcancen el suelo.</p>
+          <button class="game-button" id="game-start" type="button">Iniciar juego</button>
+        </div>
+      </div>
+      <div class="game-touch-controls" aria-label="Controles táctiles del juego">
+        <button type="button" data-game-control="left" aria-label="Mover a la izquierda">←</button>
+        <button type="button" data-game-control="fire" aria-label="Disparar">Disparar</button>
+        <button type="button" data-game-control="right" aria-label="Mover a la derecha">→</button>
+      </div>
+    </section>
+
+    <section class="artwork references-slide" data-id="5" aria-labelledby="references-title">
       <header class="references-heading">
-        <span class="references-eyebrow">Para seguir explorando</span>
+        <span class="references-eyebrow">Sección 6 · Para seguir explorando</span>
         <h2 class="references-title" id="references-title">Referencias</h2>
         <p class="references-intro">Fuentes en línea para conocer más sobre los artistas de esta galería.</p>
       </header>
@@ -538,7 +711,7 @@
     <footer>
       <div class="nav-controls">
         <button class="btn" id="prev-btn">← Anterior</button>
-        <span class="counter-display" id="counter">1 / 5</span>
+        <span class="counter-display" id="counter">1 / 6</span>
         <button class="btn" id="next-btn">Siguiente →</button>
       </div>
     </footer>
@@ -589,6 +762,7 @@
     window.addEventListener('wheel', (event) => {
       if (
         document.body.classList.contains('intro-active') ||
+        document.body.classList.contains('game-active') ||
         !window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
         event.ctrlKey
       ) {
@@ -653,6 +827,236 @@
     const nextBtn = document.getElementById('next-btn');
     const counter = document.getElementById('counter');
     let currentIndex = 0;
+    const gameCanvas = document.getElementById('game-canvas');
+    const gameCtx = gameCanvas.getContext('2d');
+    const gameOverlay = document.getElementById('game-overlay');
+    const gameMessage = document.getElementById('game-message');
+    const gameHelp = document.getElementById('game-help');
+    const gameScoreDisplay = document.getElementById('game-score');
+    const gameLivesDisplay = document.getElementById('game-lives');
+    const gameKeys = new Set();
+    let gameFrame = 0;
+    const gameState = {
+      active: false,
+      running: false,
+      lastFrame: 0,
+      score: 0,
+      lives: 3,
+      ship: { x: 0, y: 0, width: 30, height: 20, speed: 330 },
+      enemies: [],
+      bullets: [],
+      enemyBullets: [],
+      enemyDirection: 1,
+      enemySpeed: 38,
+      fireCooldown: 0,
+      enemyFireCooldown: 0.8
+    };
+
+    function scheduleGameFrame() {
+      if (gameState.active && gameState.running && !gameFrame) {
+        gameFrame = requestAnimationFrame(runGame);
+      }
+    }
+
+    function resizeGameCanvas() {
+      const bounds = gameCanvas.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      gameCanvas.width = Math.round(bounds.width * pixelRatio);
+      gameCanvas.height = Math.round(bounds.height * pixelRatio);
+      gameCtx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      gameState.ship.y = bounds.height - 38;
+      gameState.ship.x = Math.min(
+        bounds.width - gameState.ship.width / 2,
+        Math.max(gameState.ship.width / 2, gameState.ship.x || bounds.width / 2)
+      );
+      if (!gameState.running) drawGame();
+    }
+
+    function createWave() {
+      const bounds = gameCanvas.getBoundingClientRect();
+      const columns = Math.max(5, Math.min(9, Math.floor(bounds.width / 58)));
+      const rows = 4;
+      const gapX = Math.min(48, (bounds.width - 48) / columns);
+      const gapY = 30;
+      const formationWidth = (columns - 1) * gapX;
+      const left = (bounds.width - formationWidth) / 2;
+      gameState.enemies = [];
+      for (let row = 0; row < rows; row += 1) {
+        for (let column = 0; column < columns; column += 1) {
+          gameState.enemies.push({
+            x: left + column * gapX,
+            y: 44 + row * gapY,
+            width: 22,
+            height: 16
+          });
+        }
+      }
+      gameState.enemyDirection = 1;
+      gameState.enemySpeed = 38 + (gameState.score / 120);
+    }
+
+    function startGame() {
+      const bounds = gameCanvas.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+      gameState.score = 0;
+      gameState.lives = 3;
+      gameState.ship.x = bounds.width / 2;
+      gameState.ship.y = bounds.height - 38;
+      gameState.bullets = [];
+      gameState.enemyBullets = [];
+      gameState.fireCooldown = 0;
+      gameState.enemyFireCooldown = 0.8;
+      gameState.running = true;
+      gameState.lastFrame = 0;
+      gameScoreDisplay.textContent = '0000';
+      gameLivesDisplay.textContent = '3';
+      gameOverlay.hidden = true;
+      createWave();
+      scheduleGameFrame();
+    }
+
+    function endGame(won) {
+      gameState.running = false;
+      gameOverlay.hidden = false;
+      gameMessage.textContent = won ? 'La memoria persiste' : 'La oscuridad te alcanzó';
+      gameHelp.textContent = won
+        ? `Oleada despejada. Puntuación final: ${gameState.score}.`
+        : `Puntuación final: ${gameState.score}. Inténtalo de nuevo.`;
+      document.getElementById('game-start').textContent = 'Jugar otra vez';
+      drawGame();
+    }
+
+    function drawGame() {
+      const bounds = gameCanvas.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+      gameCtx.clearRect(0, 0, bounds.width, bounds.height);
+      gameCtx.fillStyle = '#d6d1c9';
+      gameCtx.shadowColor = '#a82424';
+      gameCtx.shadowBlur = 12;
+
+      gameState.enemies.forEach((enemy) => {
+        gameCtx.fillRect(enemy.x - enemy.width / 2, enemy.y - enemy.height / 2, enemy.width, enemy.height);
+        gameCtx.fillStyle = '#a82424';
+        gameCtx.fillRect(enemy.x - 6, enemy.y + 2, 3, 3);
+        gameCtx.fillRect(enemy.x + 3, enemy.y + 2, 3, 3);
+        gameCtx.fillStyle = '#d6d1c9';
+      });
+
+      gameCtx.fillStyle = '#a82424';
+      gameCtx.beginPath();
+      gameCtx.moveTo(gameState.ship.x, gameState.ship.y - gameState.ship.height / 2);
+      gameCtx.lineTo(gameState.ship.x - gameState.ship.width / 2, gameState.ship.y + gameState.ship.height / 2);
+      gameCtx.lineTo(gameState.ship.x + gameState.ship.width / 2, gameState.ship.y + gameState.ship.height / 2);
+      gameCtx.closePath();
+      gameCtx.fill();
+
+      gameCtx.shadowBlur = 0;
+      gameCtx.fillStyle = '#fff';
+      gameState.bullets.forEach((bullet) => gameCtx.fillRect(bullet.x - 2, bullet.y - 7, 4, 12));
+      gameCtx.fillStyle = '#a82424';
+      gameState.enemyBullets.forEach((bullet) => gameCtx.fillRect(bullet.x - 2, bullet.y - 5, 4, 10));
+      gameCtx.shadowBlur = 0;
+    }
+
+    function runGame(timestamp) {
+      gameFrame = 0;
+      if (!gameState.active || !gameState.running) return;
+      const bounds = gameCanvas.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) {
+        scheduleGameFrame();
+        return;
+      }
+      const delta = gameState.lastFrame
+        ? Math.min((timestamp - gameState.lastFrame) / 1000, 0.04)
+        : 0;
+      gameState.lastFrame = timestamp;
+
+      if (gameKeys.has('ArrowLeft') || gameKeys.has('a')) gameState.ship.x -= gameState.ship.speed * delta;
+      if (gameKeys.has('ArrowRight') || gameKeys.has('d')) gameState.ship.x += gameState.ship.speed * delta;
+      gameState.ship.x = Math.max(gameState.ship.width / 2, Math.min(bounds.width - gameState.ship.width / 2, gameState.ship.x));
+
+      gameState.fireCooldown -= delta;
+      if ((gameKeys.has(' ') || gameKeys.has('fire')) && gameState.fireCooldown <= 0) {
+        gameState.bullets.push({ x: gameState.ship.x, y: gameState.ship.y - 12, speed: 440 });
+        gameState.fireCooldown = 0.28;
+      }
+
+      let hitEdge = false;
+      gameState.enemies.forEach((enemy) => {
+        enemy.x += gameState.enemyDirection * gameState.enemySpeed * delta;
+        if (
+          enemy.x + enemy.width / 2 >= bounds.width - 8 ||
+          enemy.x - enemy.width / 2 <= 8
+        ) hitEdge = true;
+      });
+      if (hitEdge) {
+        gameState.enemyDirection *= -1;
+        gameState.enemies.forEach((enemy) => { enemy.y += 12; });
+      }
+
+      gameState.enemyFireCooldown -= delta;
+      if (gameState.enemies.length && gameState.enemyFireCooldown <= 0) {
+        const shooter = gameState.enemies[Math.floor(Math.random() * gameState.enemies.length)];
+        gameState.enemyBullets.push({ x: shooter.x, y: shooter.y + 10, speed: 170 });
+        gameState.enemyFireCooldown = Math.max(0.35, 1.1 - gameState.score / 500) + Math.random() * 0.7;
+      }
+
+      gameState.bullets.forEach((bullet) => { bullet.y -= bullet.speed * delta; });
+      gameState.enemyBullets.forEach((bullet) => { bullet.y += bullet.speed * delta; });
+      gameState.bullets = gameState.bullets.filter((bullet) => bullet.y > -12);
+      gameState.enemyBullets = gameState.enemyBullets.filter((bullet) => bullet.y < bounds.height + 12);
+
+      gameState.bullets = gameState.bullets.filter((bullet) => {
+        const hitIndex = gameState.enemies.findIndex((enemy) =>
+          Math.abs(bullet.x - enemy.x) < enemy.width / 2 + 3 &&
+          Math.abs(bullet.y - enemy.y) < enemy.height / 2 + 6
+        );
+        if (hitIndex < 0) return true;
+        gameState.enemies.splice(hitIndex, 1);
+        gameState.score += 10;
+        gameScoreDisplay.textContent = String(gameState.score).padStart(4, '0');
+        return false;
+      });
+
+      gameState.enemyBullets = gameState.enemyBullets.filter((bullet) => {
+        if (
+          Math.abs(bullet.x - gameState.ship.x) < gameState.ship.width / 2 &&
+          Math.abs(bullet.y - gameState.ship.y) < gameState.ship.height / 2 + 5
+        ) {
+          gameState.lives -= 1;
+          gameLivesDisplay.textContent = String(gameState.lives);
+          if (gameState.lives <= 0) endGame(false);
+          return false;
+        }
+        return true;
+      });
+
+      if (gameState.enemies.some((enemy) => enemy.y + enemy.height / 2 >= gameState.ship.y - 18)) {
+        endGame(false);
+      } else if (!gameState.enemies.length) {
+        endGame(true);
+      }
+
+      drawGame();
+      scheduleGameFrame();
+    }
+
+    document.getElementById('game-start').addEventListener('click', startGame);
+    document.querySelectorAll('[data-game-control]').forEach((button) => {
+      const control = button.dataset.gameControl;
+      button.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        gameKeys.add(control);
+        button.setPointerCapture(event.pointerId);
+      });
+      const releaseControl = () => gameKeys.delete(control);
+      button.addEventListener('pointerup', releaseControl);
+      button.addEventListener('pointercancel', releaseControl);
+      button.addEventListener('lostpointercapture', releaseControl);
+    });
+    window.addEventListener('resize', resizeGameCanvas);
+    resizeGameCanvas();
 
     function updateGallery(index) {
       torchRadius = minTorchRadius;
@@ -664,6 +1068,17 @@
         'references-active',
         artworks[index].classList.contains('references-slide')
       );
+      gameState.active = artworks[index].classList.contains('game-slide');
+      document.body.classList.toggle('game-active', gameState.active);
+      gameKeys.clear();
+      if (gameState.active) {
+        resizeGameCanvas();
+        gameState.lastFrame = 0;
+        scheduleGameFrame();
+      } else if (gameFrame) {
+        cancelAnimationFrame(gameFrame);
+        gameFrame = 0;
+      }
       counter.textContent = `${index + 1} / ${artworks.length}`;
     }
 
@@ -678,14 +1093,42 @@
     });
 
     window.addEventListener('keydown', (event) => {
-      if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') {
+      if (gameState.active) {
+        if (event.key === 'PageUp' || event.key === 'PageDown') {
+          event.preventDefault();
+          (event.key === 'PageUp' ? prevBtn : nextBtn).click();
+          return;
+        }
+
+        const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+        if (['ArrowLeft', 'ArrowRight', ' ', 'a', 'd'].includes(key)) {
+          event.preventDefault();
+          gameKeys.add(key);
+        }
+        return;
+      }
+
+      if (
+        event.key === 'ArrowLeft' ||
+        event.key === 'PageUp' ||
+        event.key.toLowerCase() === 'a'
+      ) {
         prevBtn.click();
       }
 
-      if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') {
+      if (
+        event.key === 'ArrowRight' ||
+        event.key === 'PageDown' ||
+        event.key.toLowerCase() === 'd'
+      ) {
         nextBtn.click();
       }
     });
+    window.addEventListener('keyup', (event) => {
+      const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+      gameKeys.delete(key);
+    });
+    window.addEventListener('blur', () => gameKeys.clear());
   </script>
 </body>
 </html>
